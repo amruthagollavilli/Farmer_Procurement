@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/farmer_procurement
+    username: postgres
+    password: Shiva@651
+  jpa:
+      hibernate:
+        ddl-auto: update
