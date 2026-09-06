@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -25,4 +28,10 @@ public class BookingRequest {
     @NotNull(message = "Quantity is required")
     @Positive(message = "Quantity must be greater than 0")
     private Double quantityKg;
+
+    @NotNull(message = "Scheduled date is required")
+    private LocalDate scheduledDate;
+
+    @NotNull(message = "Scheduled time is required")
+    private LocalTime scheduledTime;
 }

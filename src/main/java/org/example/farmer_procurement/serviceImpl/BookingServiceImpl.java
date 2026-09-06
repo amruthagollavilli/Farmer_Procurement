@@ -3,6 +3,7 @@ package org.example.farmer_procurement.serviceImpl;
 import org.example.farmer_procurement.dto_request.BookingRequest;
 import org.example.farmer_procurement.dto_response.BookingResponse;
 import org.example.farmer_procurement.entity.*;
+import org.example.farmer_procurement.exception.ValidationException;
 import org.example.farmer_procurement.repository.BookingRepository;
 import org.example.farmer_procurement.repository.CropRepository;
 import org.example.farmer_procurement.repository.FarmerRepository;
@@ -11,6 +12,7 @@ import org.example.farmer_procurement.service.BookingService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -36,23 +38,34 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse createBooking(BookingRequest request) {
 
+        // Check whether selected time is an available slot
+        List<LocalTime> availableSlots = List.of(
+                LocalTime.of(9, 0),
+                LocalTime.of(10, 0),
+                LocalTime.of(11, 0),
+                LocalTime.of(12, 0),
+                LocalTime.of(14, 0),
+                LocalTime.of(15, 0),
+                LocalTime.of(16, 0),
+                LocalTime.of(17, 0)
+        );
+
+        if (!availableSlots.contains(request.getScheduledTime())) {
+            throw new ValidationException("Invalid scheduled time");
+        }
+
         Farmer farmer = farmerRepository.findByFarmerId(request.getFarmerId())
-                .orElseThrow(() ->
-                        new RuntimeException("Farmer not found"));
+                .orElseThrow(() -> new RuntimeException("Farmer not found"));
 
         Crop crop = cropRepository.findById(request.getCropId())
-                .orElseThrow(() ->
-                        new RuntimeException("Crop not found"));
+                .orElseThrow(() -> new RuntimeException("Crop not found"));
 
         Procurement centre = procurementCentreRepository
                 .findById(request.getProcurementCentreId())
-                .orElseThrow(() ->
-                        new RuntimeException("Procurement centre not found"));
+                .orElseThrow(() -> new RuntimeException("Procurement centre not found"));
 
         Double pricePerKg = crop.getPricePerKg();
-
-        Double totalAmount =
-                request.getQuantityKg() * pricePerKg;
+        Double totalAmount = request.getQuantityKg() * pricePerKg;
 
         Booking booking = new Booking();
 
@@ -64,8 +77,11 @@ public class BookingServiceImpl implements BookingService {
         booking.setTotalAmount(totalAmount);
         booking.setBookingDate(LocalDateTime.now());
 
-        Booking savedBooking =
-                bookingRepository.save(booking);
+        // Save farmer's selected schedule
+        booking.setScheduledDate(request.getScheduledDate());
+        booking.setScheduledTime(request.getScheduledTime());
+
+        Booking savedBooking = bookingRepository.save(booking);
 
         return new BookingResponse(
                 savedBooking.getId(),
@@ -76,6 +92,8 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking.getPricePerKg(),
                 savedBooking.getTotalAmount(),
                 savedBooking.getBookingDate(),
+                savedBooking.getScheduledDate(),
+                savedBooking.getScheduledTime(),
                 "Booking successful"
         );
     }
@@ -84,11 +102,9 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponse> getBookingHistory(Long farmerId) {
 
         Farmer farmer = farmerRepository.findByFarmerId(farmerId)
-                .orElseThrow(() ->
-                        new RuntimeException("Farmer not found"));
+                .orElseThrow(() -> new RuntimeException("Farmer not found"));
 
-        List<Booking> bookings =
-                bookingRepository.findByFarmer(farmer);
+        List<Booking> bookings = bookingRepository.findByFarmer(farmer);
 
         return bookings.stream()
                 .map(booking -> new BookingResponse(
@@ -100,6 +116,8 @@ public class BookingServiceImpl implements BookingService {
                         booking.getPricePerKg(),
                         booking.getTotalAmount(),
                         booking.getBookingDate(),
+                        booking.getScheduledDate(),
+                        booking.getScheduledTime(),
                         "Booking history"
                 ))
                 .toList();

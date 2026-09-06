@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -21,5 +23,7 @@ public class BookingResponse {
     private Double pricePerKg;
     private Double totalAmount;
     private LocalDateTime bookingDate;
+    private LocalDate scheduledDate;
+    private LocalTime scheduledTime;
     private String message;
 }

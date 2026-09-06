@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "booking")
@@ -43,4 +45,10 @@ public class Booking {
 
     @Column(nullable = false)
     private LocalDateTime bookingDate;
+
+    @Column(nullable = false)
+    private LocalDate scheduledDate;
+
+    @Column(nullable = false)
+    private LocalTime scheduledTime;
 }
